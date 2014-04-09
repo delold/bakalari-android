@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import cz.duong.skolar.R;
 import cz.duong.skolar.server.UrlRequest;
+import cz.duong.skolar.utils.SchoolUtils;
 
 /**
  * Created by David on 9. 4. 2014.
@@ -25,6 +26,8 @@ public class ZnamkyFragment extends Fragment implements UrlRequest.RequestComple
         TextView textView = (TextView) rootView.findViewById(R.id.section_label);
 
         new UrlRequest(this).execute("znamky");
+
+        Log.d("SKOLAR-DB", SchoolUtils.shortenSubject("Biologie"));
 
         return rootView;
     }
