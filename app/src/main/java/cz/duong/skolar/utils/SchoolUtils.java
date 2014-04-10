@@ -37,7 +37,7 @@ public class SchoolUtils {
 
     public static String shortenSubject(String subject) {
         Map<String, String> exceptions = new HashMap<String, String>();
-        exceptions.put("čj", "Čj");
+        exceptions.put("čjl", "Čj");
         exceptions.put("evh", "Eh");
         exceptions.put("evv", "Ev");
 
@@ -71,8 +71,6 @@ public class SchoolUtils {
         if(exceptions.containsKey(result.toLowerCase())) {
             return exceptions.get(result.toLowerCase());
         }
-
-
 
         return result;
     }

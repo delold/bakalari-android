@@ -1,6 +1,7 @@
-package cz.duong.skolar.server;
+package cz.duong.skolar.utils;
 
 import android.os.AsyncTask;
+import android.os.Bundle;
 
 import com.squareup.okhttp.OkHttpClient;
 
@@ -24,10 +25,12 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.duong.skolar.server.Users;
+
 /**
  * Created by David on 15.3.14.
  */
-public class UrlRequest extends AsyncTask<String, Void, JSONObject> {
+public class UrlRequest extends AsyncTask<Bundle, Void, JSONObject> {
     public static String SERVER_HOST = "http://192.168.1.103/BakaParser/";
 
     private RequestComplete completeListener;
@@ -65,15 +68,23 @@ public class UrlRequest extends AsyncTask<String, Void, JSONObject> {
         return result.toString();
     }
 
-    public String request(String page) throws IOException {
+    public JSONObject stringToJSON(String string) {
+        try {
+            return new JSONObject(string);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new JSONObject();
+        }
+    }
+
+    private String request(String page, List<NameValuePair> params) throws IOException {
 
         HttpURLConnection connection = client.open(constructURL(page));
         OutputStream out = null;
         InputStream in = null;
 
         try {
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("file", "klasifikace-pokrocily.html"));
+
 
             connection.setRequestMethod("POST");
 
@@ -107,19 +118,41 @@ public class UrlRequest extends AsyncTask<String, Void, JSONObject> {
         }
     }
 
-    public JSONObject stringToJSON(String string) {
-        try {
-            return new JSONObject(string);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return new JSONObject();
-        }
+    private String get(String page, Users.User user) throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("user", user.user));
+        params.add(new BasicNameValuePair("pass", user.pass));
+        params.add(new BasicNameValuePair("url", user.url));
+
+        return this.request(page, params);
+    }
+
+    private String get(String page, String debug) throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("file", debug));
+
+        return this.request(page, params);
     }
 
     @Override
-    protected JSONObject doInBackground(String... params) {
+    protected JSONObject doInBackground(Bundle... params) {
         try {
-            return this.stringToJSON(this.request(params[0]));
+            Bundle request = params[0];
+
+            if(!request.containsKey("page")) {
+                throw new IOException("Not defined page");
+            }
+
+            if (request.containsKey("user")) {
+                return this.stringToJSON(this.get(request.getString("user"),
+                        (Users.User) request.getParcelable("user")));
+            } else if (request.containsKey("file")) {
+                return this.stringToJSON(this.get(request.getString("user"),
+                        (Users.User) request.getParcelable("file")));
+            } else {
+                throw new IOException("Not defined parameter");
+
+            }
         } catch (IOException e) {
             return new JSONObject();
         }
