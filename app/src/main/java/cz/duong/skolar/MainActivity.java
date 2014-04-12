@@ -1,6 +1,7 @@
 package cz.duong.skolar;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -8,6 +9,9 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import cz.duong.skolar.fragments.PlanFragment;
+import cz.duong.skolar.fragments.RozvrhFragment;
+import cz.duong.skolar.fragments.SuplovaniFragment;
 import cz.duong.skolar.fragments.ZnamkyFragment;
 
 
@@ -43,21 +47,40 @@ public class MainActivity extends ActionBarActivity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
+
+        Fragment fr;
+
+        switch(position) {
+            case 0:
+                fr = new ZnamkyFragment();
+                break;
+            case 1:
+                fr = new RozvrhFragment();
+                break;
+            case 2:
+                fr = new SuplovaniFragment();
+                break;
+            case 3:
+                fr = new PlanFragment();
+                break;
+            default:
+                fr = new ZnamkyFragment();
+        }
         fragmentManager.beginTransaction()
-                .replace(R.id.container, new ZnamkyFragment())
+                .replace(R.id.container, fr)
                 .commit();
     }
 
     public void onSectionAttached(int number) {
         switch (number) {
             case 1:
-                mTitle = getString(R.string.title_section1);
+                mTitle = getString(R.string.title_znamky);
                 break;
             case 2:
-                mTitle = getString(R.string.title_section2);
+                mTitle = getString(R.string.title_rozvrh);
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                mTitle = getString(R.string.title_suplovani);
                 break;
         }
     }

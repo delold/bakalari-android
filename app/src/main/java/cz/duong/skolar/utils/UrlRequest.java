@@ -2,6 +2,7 @@ package cz.duong.skolar.utils;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.squareup.okhttp.OkHttpClient;
 
@@ -31,7 +32,7 @@ import cz.duong.skolar.server.Users;
  * Created by David on 15.3.14.
  */
 public class UrlRequest extends AsyncTask<Bundle, Void, JSONObject> {
-    public static String SERVER_HOST = "http://192.168.1.103/BakaParser/";
+    public static String SERVER_HOST = "http://duong.cz/BakaParser/";
 
     private RequestComplete completeListener;
     private OkHttpClient client = new OkHttpClient();
@@ -84,8 +85,6 @@ public class UrlRequest extends AsyncTask<Bundle, Void, JSONObject> {
         InputStream in = null;
 
         try {
-
-
             connection.setRequestMethod("POST");
 
             out = connection.getOutputStream();
@@ -110,6 +109,7 @@ public class UrlRequest extends AsyncTask<Bundle, Void, JSONObject> {
                 total.append(line);
             }
 
+            Log.d("SKOLAR-DB", total.toString());
             return total.toString();
 
         } finally {
@@ -131,6 +131,8 @@ public class UrlRequest extends AsyncTask<Bundle, Void, JSONObject> {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("file", debug));
 
+
+
         return this.request(page, params);
     }
 
@@ -144,16 +146,16 @@ public class UrlRequest extends AsyncTask<Bundle, Void, JSONObject> {
             }
 
             if (request.containsKey("user")) {
-                return this.stringToJSON(this.get(request.getString("user"),
+                return this.stringToJSON(this.get(request.getString("page"),
                         (Users.User) request.getParcelable("user")));
             } else if (request.containsKey("file")) {
-                return this.stringToJSON(this.get(request.getString("user"),
-                        (Users.User) request.getParcelable("file")));
+                return this.stringToJSON(this.get(request.getString("page"),
+                        request.getString("file")));
             } else {
                 throw new IOException("Not defined parameter");
-
             }
         } catch (IOException e) {
+            e.printStackTrace();
             return new JSONObject();
         }
     }

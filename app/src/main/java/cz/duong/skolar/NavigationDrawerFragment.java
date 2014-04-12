@@ -1,16 +1,17 @@
 package cz.duong.skolar;
 
-import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,8 +20,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -97,21 +102,62 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+
+        ArrayList<HashMap<String, String>> data = new ArrayList<HashMap<String, String>>();
+
+        HashMap<String, String> znamky = new HashMap<String, String>();
+        znamky.put("text", getString(R.string.title_znamky));
+        znamky.put("icon", Integer.toString(R.drawable.znamky));
+        data.add(znamky);
+
+        HashMap<String, String> rozvrh = new HashMap<String, String>();
+        rozvrh.put("text", getString(R.string.title_rozvrh));
+        rozvrh.put("icon", Integer.toString(R.drawable.rozvrh));
+        data.add(rozvrh);
+
+
+        HashMap<String, String> suplovani = new HashMap<String, String>();
+        suplovani.put("text", getString(R.string.title_suplovani));
+        suplovani.put("icon", Integer.toString(R.drawable.suplovani));
+        data.add(suplovani);
+
+        HashMap<String, String> plan = new HashMap<String, String>();
+        plan.put("text", getString(R.string.title_plan));
+        plan.put("icon", Integer.toString(R.drawable.plan));
+        data.add(plan);
+
+        mDrawerListView.setAdapter(new NavigationAdapter(
                 getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                }));
+                data));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
 
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
+    }
+
+    public class NavigationAdapter extends ArrayAdapter<HashMap<String, String>> {
+
+        public NavigationAdapter(Context context, ArrayList<HashMap<String, String>> objects) {
+            super(context, R.layout.navigation_item, objects);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if(convertView == null) {
+                LayoutInflater inflater = getLayoutInflater(null);
+                convertView = inflater.inflate(R.layout.navigation_item, null);
+            }
+
+            TextView label = (TextView) convertView.findViewById(R.id.navigation_text);
+            ImageView icon = (ImageView) convertView.findViewById(R.id.navigation_icon);
+
+            label.setText(this.getItem(position).get("text"));
+            icon.setImageResource(Integer.parseInt(this.getItem(position).get("icon")));
+
+            return convertView;
+        }
     }
 
     /**
@@ -247,10 +293,10 @@ public class NavigationDrawerFragment extends Fragment {
             return true;
         }
 
-        if (item.getItemId() == R.id.action_example) {
+/*        if (item.getItemId() == R.id.action_example) {
             Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }

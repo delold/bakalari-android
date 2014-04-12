@@ -10,4 +10,13 @@
     <color name="card_separator">#ffe5e5e5</color>
     <color name="card_border">#ffdedede</color>
 
+    <color name="icon_color">#ccc</color>
+
+
+    <color name="mark_1">#2ECC71</color>
+    <color name="mark_2">#F1C40F</color>
+    <color name="mark_3">#E67E22</color>
+    <color name="mark_4">#D35400</color>
+    <color name="mark_5">#C0392B</color>
+
 </resources>
