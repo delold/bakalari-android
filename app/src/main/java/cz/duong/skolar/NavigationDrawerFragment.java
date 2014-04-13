@@ -20,12 +20,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import cz.duong.skolar.server.Users;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -63,6 +67,8 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
+    private UsersAdapter usersadapter;
+
     public NavigationDrawerFragment() {
     }
 
@@ -92,16 +98,31 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
+                if(position > 0) {
+                    selectItem(position - 1);
+                } else {
+                    ListView lv = (ListView) parent;
+                    lv.setItemChecked(position, false);
+                }
+
             }
         });
+
+        //retrieve user data
+        usersadapter = new UsersAdapter(
+                this.getActivity(),
+                new ArrayList<Users.User>(new Users(this.getActivity()).getUsers())
+        );
+
+
+
 
         ArrayList<HashMap<String, String>> data = new ArrayList<HashMap<String, String>>();
 
@@ -130,6 +151,7 @@ public class NavigationDrawerFragment extends Fragment {
                 getActionBar().getThemedContext(),
                 data));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+
         return mDrawerListView;
     }
 
@@ -137,7 +159,105 @@ public class NavigationDrawerFragment extends Fragment {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
     }
 
-    public class NavigationAdapter extends ArrayAdapter<HashMap<String, String>> {
+    public class UsersAdapter extends ArrayAdapter<Users.User> {
+        public UsersAdapter(Context context, ArrayList<Users.User> objects) {
+            super(context, R.layout.navigation_spinner_item, R.id.user_name, objects);
+        }
+
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            return this.getCustomView(position, convertView, parent, R.layout.navigation_spinner_item_dropdown);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            return this.getCustomView(position, convertView, parent, R.layout.navigation_spinner_item);
+        }
+
+        public View getCustomView(int position, View convertView, ViewGroup parent, int resource) {
+            if(convertView == null) {
+                LayoutInflater inflater = getLayoutInflater(null);
+
+                convertView = inflater.inflate(resource, null);
+            }
+
+            TextView name  = (TextView) convertView.findViewById(R.id.user_name);
+            TextView title = (TextView) convertView.findViewById(R.id.user_title);
+
+            name.setText(((Users.User)getItem(position)).name);
+            title.setText(((Users.User)getItem(position)).title);
+
+            return convertView;
+        }
+    }
+
+    public class NavigationAdapter extends BaseAdapter {
+
+        private Context context;
+        private ArrayList<HashMap<String, String>> objects;
+
+
+        public NavigationAdapter(Context context, ArrayList<HashMap<String, String>> objects) {
+            this.context = context;
+            this.objects = objects;
+        }
+
+
+        @Override
+        public int getCount() {
+            return objects.size() + 1;
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return 2;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return (position == 0) ? 1 : 0;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return (getItemViewType(position) == 1) ? null : objects.get(position - 1);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position - 1;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            if(convertView == null) {
+                LayoutInflater inflater = getLayoutInflater(null);
+
+                if(getItemViewType(position) == 1) {
+                    convertView = inflater.inflate(R.layout.navigation_spinner, null);
+                    //convertView = inflater.inflate(R.layout.navigation_item, null);
+                } else {
+                    convertView = inflater.inflate(R.layout.navigation_item, null);
+                }
+            }
+
+            if(getItemViewType(position) == 1) {
+                Spinner spinner = (Spinner) convertView.findViewById(R.id.user_spinner);
+
+                spinner.setAdapter(usersadapter);
+            } else {
+                TextView label = (TextView) convertView.findViewById(R.id.navigation_text);
+                ImageView icon = (ImageView) convertView.findViewById(R.id.navigation_icon);
+
+                label.setText(((HashMap<String, String>) this.getItem(position)).get("text"));
+                icon.setImageResource(Integer.parseInt(((HashMap<String, String>) this.getItem(position)).get("icon")));
+            }
+
+            return convertView;
+        }
+    }
+    /*public class NavigationAdapter extends ArrayAdapter<HashMap<String, String>> {
 
         public NavigationAdapter(Context context, ArrayList<HashMap<String, String>> objects) {
             super(context, R.layout.navigation_item, objects);
@@ -150,15 +270,11 @@ public class NavigationDrawerFragment extends Fragment {
                 convertView = inflater.inflate(R.layout.navigation_item, null);
             }
 
-            TextView label = (TextView) convertView.findViewById(R.id.navigation_text);
-            ImageView icon = (ImageView) convertView.findViewById(R.id.navigation_icon);
 
-            label.setText(this.getItem(position).get("text"));
-            icon.setImageResource(Integer.parseInt(this.getItem(position).get("icon")));
 
             return convertView;
         }
-    }
+    }*/
 
     /**
      * Users of this fragment must call this method to set up the navigation drawer interactions.

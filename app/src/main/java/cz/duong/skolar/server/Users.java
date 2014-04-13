@@ -1,12 +1,28 @@
 package cz.duong.skolar.server;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cz.duong.skolar.utils.DatabaseHandler;
 
 /**
  * Created by David on 10. 4. 2014.
  */
 public class Users {
+
+    protected DatabaseHandler handler;
+
+    private static final String TABLE_USERS = "users";
+
+    public Users(Context context) {
+        handler = DatabaseHandler.getInstance(context);
+    }
 
     public class User implements Parcelable {
         public final Integer id;
@@ -67,8 +83,76 @@ public class Users {
         };
     }
 
+    public List<User> getUsers() {
+        SQLiteDatabase db = handler.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_USERS, null);
+        List<User> result = new ArrayList<User>();
+
+        while(cursor.moveToNext()) {
+            result.add(new User(
+                    cursor.getInt(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    cursor.getString(4),
+                    cursor.getString(5)
+            ));
+        }
+
+        /*if(cursor.moveToFirst()) {
+
+            do {
+                result.add(new User(
+                    cursor.getInt(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    cursor.getString(4),
+                    cursor.getString(5)
+                ));
+
+            } while (cursor.moveToFirst());
+        }*/
+
+        return result;
+    }
+
+    public User getUser(Integer id) {
+        SQLiteDatabase db = handler.getReadableDatabase();
+
+        Cursor cursor = db.query(TABLE_USERS, null, "id =?", new String[] { id.toString() }, null, null, null);
+
+        if(cursor != null) {
+            cursor.moveToFirst();
+        }
+
+        return new User(
+            cursor.getInt(0),
+            cursor.getString(1),
+            cursor.getString(2),
+            cursor.getString(3),
+            cursor.getString(4),
+            cursor.getString(5)
+        );
+    }
+
+    public int getFirstID() {
+        SQLiteDatabase db = handler.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_USERS, new String[] { "id" }, null, null, null, null, null);
+
+        if(cursor != null) {
+            cursor.moveToFirst();
+
+            return cursor.getInt(0);
+        }
+
+        return 0;
+    }
+
     public User getCurrentUser() {
-        return new User(0, "971031r", "dfiypam4", "http://intranet.wigym.cz:6040/bakaweb/");
+        return this.getUser(this.getFirstID());
+        //return new User(0, "971031r", "dfiypam4", "http://intranet.wigym.cz:6040/bakaweb/");
     }
 
 

@@ -7,6 +7,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/plan_list"
+        android:padding="6dp"
+        android:clipToPadding="false"
+        android:divider="@null"
         android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true" />
 </RelativeLayout>

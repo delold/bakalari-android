@@ -1,8 +1,11 @@
 package cz.duong.skolar.fragments;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,8 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import com.devspark.progressfragment.ProgressFragment;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,34 +25,49 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import cz.duong.skolar.R;
+import cz.duong.skolar.server.Users;
+import cz.duong.skolar.utils.CoreUtils;
 import cz.duong.skolar.utils.UrlRequest;
 
 /**
  * Created by David on 9. 4. 2014.
  */
-public class PlanFragment extends Fragment implements UrlRequest.RequestComplete {
+public class PlanFragment extends ProgressFragment implements UrlRequest.RequestComplete {
+
+    private View contentView;
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        setContentView(contentView);
+        setEmptyText(R.string.data_empty);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        contentView = inflater.inflate(R.layout.fragment_plan, container, false);
 
-        View rootView = inflater.inflate(R.layout.fragment_plan, container, false);
-
-        return rootView;
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     public void dataLoaded(JSONObject object) throws JSONException {
         if(this.isAdded()) {
+            setContentShown(true);
+
             //seřadit objekty jinak
             object = this.sortToDay(object.getJSONObject("data").getJSONArray("akce"));
 
-
-
+            int dp = CoreUtils.convertDPtoPX(this.getResources(), 40+8);
 
             ExpandableListView lv = (ExpandableListView) this.getView().findViewById(R.id.plan_list);
 
             ExpandableListAdapter adapter = new PlanAdapter(this.getActivity(), object);
 
-            if(adapter == null) {
-                Log.d("SKOLAR-PLAN", "NULL - ADAPTER!");
+            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                lv.setIndicatorBounds(lv.getRight() - dp, lv.getWidth());
+            } else {
+                lv.setIndicatorBoundsRelative(lv.getRight() - dp, lv.getWidth());
             }
 
             lv.setAdapter(adapter);
@@ -84,8 +104,11 @@ public class PlanFragment extends Fragment implements UrlRequest.RequestComplete
 
         Bundle request = new Bundle();
         request.putString("page", "akce");
-        request.putString("file", "akce-zaklad.html");
+        //request.putString("file", "akce-zaklad.html");
 
+        request.putParcelable("user", new Users(this.getActivity()).getCurrentUser());
+
+        setContentShown(false);
         new UrlRequest(this).execute(request);
     }
 
@@ -166,38 +189,108 @@ public class PlanFragment extends Fragment implements UrlRequest.RequestComplete
         @Override
         public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
             if(convertView == null) {
-                convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
+                convertView = inflater.inflate(R.layout.plan_label, null);
             }
 
-            TextView day_text = (TextView) convertView.findViewById(android.R.id.text1);
-
+            TextView day_text = (TextView) convertView.findViewById(R.id.plan_day);
             DateFormat format = android.text.format.DateFormat.getDateFormat(this.context);
-
             day_text.setText(format.format(new Date(this.getGroupId(groupPosition) * 1000)));
 
-
             return convertView;
+        }
+
+        public SpannableStringBuilder createKeyValueText(String label, String value) {
+            final SpannableStringBuilder builder = new SpannableStringBuilder(label+": "+value);
+            final StyleSpan span = new StyleSpan(Typeface.BOLD);
+            builder.setSpan(span, 0, label.length()+1, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+            return builder;
+        }
+
+        public String convertArrayToString(JSONArray array, String divider) throws JSONException {
+            StringBuilder builder = new StringBuilder();
+
+            for(int i = 0; i < array.length(); i++) {
+                builder.append(array.getString(i));
+
+                if(i != array.length()-1) {
+                    builder.append(divider);
+                }
+            }
+
+            return builder.toString();
+
         }
 
         @Override
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
             try {
                 if (convertView == null) {
-                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, null);
+                    convertView = inflater.inflate(R.layout.plan_item, null);
                 }
 
                 JSONObject event = (JSONObject) this.getChild(groupPosition, childPosition);
 
-                TextView name_text = (TextView) convertView.findViewById(android.R.id.text1);
-                TextView detail_text = (TextView) convertView.findViewById(android.R.id.text2);
+                TextView name_text = (TextView) convertView.findViewById(R.id.plan_name);
+                TextView class_text = (TextView) convertView.findViewById(R.id.plan_class);
+                TextView teacher_text = (TextView) convertView.findViewById(R.id.plan_teacher);
+                TextView time_text = (TextView) convertView.findViewById(R.id.plan_time);
+                TextView place_text = (TextView) convertView.findViewById(R.id.plan_place);
+                TextView detail_text = (TextView) convertView.findViewById(R.id.plan_detail);
 
-                name_text.setText(event.getString("name"));
 
-                if (event.has("detail")) {
 
-                    detail_text.setText(event.getString("detail"));
+                if(!event.has("name")) {
+                    name_text.setVisibility(View.GONE);
                 } else {
-                    detail_text.setText("");
+                    name_text.setText(event.getString("name"));
+                }
+
+                if(!event.has("class")) { //hhehe
+                    class_text.setVisibility(View.GONE);
+                } else {
+                    class_text.setText(
+                        this.createKeyValueText("Třídy",
+                            this.convertArrayToString(event.getJSONArray("class"), ",")
+                        )
+                    );
+                }
+
+                if(!event.has("teacher")) {
+                    teacher_text.setVisibility(View.GONE);
+                } else {
+                    teacher_text.setText(
+                            this.createKeyValueText("Učitelé",
+                                    this.convertArrayToString(event.getJSONArray("teacher"), ",")
+                            )
+                    );
+                }
+
+                if(!event.getJSONObject("time").has("time")) {
+                    time_text.setVisibility(View.GONE);
+                } else {
+                    time_text.setText(
+                        this.createKeyValueText("Čas",
+                            this.convertArrayToString(event.getJSONObject("time").getJSONArray("time"), " - ")
+                        )
+                    );
+                }
+
+                if(!event.has("place")) {
+                    place_text.setVisibility(View.GONE);
+                } else {
+                    place_text.setText(
+                            this.createKeyValueText("Místo",
+                                    event.getString("place")
+                            )
+                    );
+                }
+
+
+                if (!event.has("detail")) {
+                    detail_text.setVisibility(View.GONE);
+                } else {
+                    detail_text.setText(event.getString("detail"));
                 }
 
                 return convertView;

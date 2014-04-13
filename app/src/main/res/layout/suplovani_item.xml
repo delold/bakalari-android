@@ -1,61 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/card">
+    android:background="@drawable/card"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Čj"
-        android:background="#e03abf"
-        android:id="@+id/rozvrh_shortedSubject"
-        android:width="48dp"
-        android:height="48dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:textColor="@android:color/white"
-        android:singleLine="false"
-        android:gravity="center_vertical|center_horizontal" />
+        android:textSize="14sp"
+        android:id="@+id/suplovani_data"
+        android:layout_height="wrap_content" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/rozvrh_subject"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/rozvrh_shortedSubject"
-        android:text="Český jazyk a literatura"
-        android:layout_toLeftOf="@+id/rozvrh_average"
-        android:layout_alignBottom="@+id/rozvrh_lastmark"
-        android:gravity="center_vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:id="@+id/rozvrh_lastmark"
-        android:layout_alignBottom="@id/rozvrh_shortedSubject"
-        android:layout_toRightOf="@id/rozvrh_shortedSubject" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/rozvrh_average"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:text="5.28"
-        android:singleLine="true"
-        android:phoneNumber="true"
-        android:textSize="32sp"
-        android:gravity="center_vertical"
-        android:layout_alignBottom="@+id/rozvrh_lastmark" />
-
-</RelativeLayout>
+</FrameLayout>

@@ -2,8 +2,10 @@
 
 <RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_height="33.5dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp">
 
     <TextView
         android:layout_width="wrap_content"
@@ -11,12 +13,15 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/rozvrh_times_label"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textSize="14sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/rozvrh_times_time"
         android:layout_below="@+id/rozvrh_times_label"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/text_light"
+        android:textSize="10sp" />
 </RelativeLayout>

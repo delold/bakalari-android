@@ -66,6 +66,9 @@ public class MainActivity extends ActionBarActivity
             default:
                 fr = new ZnamkyFragment();
         }
+
+        onSectionAttached(position + 1);
+
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fr)
                 .commit();
@@ -81,6 +84,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 3:
                 mTitle = getString(R.string.title_suplovani);
+                break;
+            case 4:
+                mTitle = getString(R.string.title_plan);
                 break;
         }
     }

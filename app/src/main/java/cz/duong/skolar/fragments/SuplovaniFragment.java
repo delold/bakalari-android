@@ -2,14 +2,19 @@ package cz.duong.skolar.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.text.Html;
+import android.text.SpannableString;
+import android.text.SpannedString;
+import android.text.TextUtils;
+import android.text.style.BulletSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import com.devspark.progressfragment.ProgressFragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,24 +26,25 @@ import java.util.Date;
 import java.util.List;
 
 import cz.duong.skolar.R;
+import cz.duong.skolar.server.Users;
 import cz.duong.skolar.utils.UrlRequest;
 
-public class SuplovaniFragment extends ListFragment implements UrlRequest.RequestComplete {
+public class SuplovaniFragment extends ProgressFragment implements UrlRequest.RequestComplete {
 
-    public SuplovaniFragment() {
-    }
+    private View contentView;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
+        setContentView(contentView);
+        setEmptyText(R.string.data_empty);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-        return rootView;
+        contentView = inflater.inflate(R.layout.fragment_main, container, false);
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
@@ -47,8 +53,11 @@ public class SuplovaniFragment extends ListFragment implements UrlRequest.Reques
 
         Bundle request = new Bundle();
         request.putString("page", "suplovani");
-        request.putString("file", "suplovani-zaklad.htm");
+        //request.putString("file", "suplovani-zaklad.htm");
 
+        request.putParcelable("user", new Users(this.getActivity()).getCurrentUser());
+
+        this.setContentShown(false);
         new UrlRequest(this).execute(request);
     }
 
@@ -58,7 +67,13 @@ public class SuplovaniFragment extends ListFragment implements UrlRequest.Reques
     }
 
     public void dataFinished(JSONObject object) {
-        this.setListAdapter(new SuplovaniAdapter(this.getActivity(), object));
+        if(isAdded()) {
+
+            this.setContentShown(true);
+
+            ListView lv = (ListView) this.getView().findViewById(android.R.id.list);
+            lv.setAdapter(new SuplovaniAdapter(this.getActivity(), object));
+        }
     }
 
     public class SuplovaniAdapter extends BaseAdapter {
@@ -71,6 +86,7 @@ public class SuplovaniFragment extends ListFragment implements UrlRequest.Reques
         private List<CharSequence> changes = new ArrayList<CharSequence>();
 
         public SuplovaniAdapter(Context context, JSONObject source) {
+
             try {
                 this.context = context;
                 this.source = source.getJSONObject("data");
@@ -88,28 +104,36 @@ public class SuplovaniFragment extends ListFragment implements UrlRequest.Reques
                 JSONObject day = source.getJSONObject(i);
                 JSONArray changes = day.getJSONArray("changes");
 
-
                 Long date = Long.parseLong(day.getString("date"))* 1000;
 
-                Log.d("SKOLAR-DB", this.JSONToString(changes));
-                String span = this.JSONToString(changes);
-
-
-
+                CharSequence span = this.JSONToString(changes);
 
                 this.changes.add(span);
                 this.dates.add(new Date(date));
             }
         }
 
-        private String JSONToString(JSONArray input) throws JSONException {
-            StringBuilder builder = new StringBuilder();
+        private CharSequence JSONToString(JSONArray input) throws JSONException {
+
+            CharSequence result = "";
 
             for(int y = 0; y < input.length(); y++) {
-                builder.append(input.getString(y));
+                String change = input.getString(y);
+
+                SpannableString string = new SpannableString(change);
+                string.setSpan(new BulletSpan(15), 0, change.length(), 0);
+
+
+                if(result.length() == 0) {
+                    result = TextUtils.concat(result, string);
+                } else {
+                    result = TextUtils.concat(result, "\n", string);
+                }
             }
 
-            return builder.toString();
+            return result;
+
+
         }
         @Override
         public int getCount() {
@@ -146,7 +170,7 @@ public class SuplovaniFragment extends ListFragment implements UrlRequest.Reques
 
         @Override
         public int getViewTypeCount() {
-            return 1;
+            return 2;
         }
 
         @Override
@@ -158,21 +182,27 @@ public class SuplovaniFragment extends ListFragment implements UrlRequest.Reques
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = this.inflater.inflate(android.R.layout.simple_list_item_1, null);
+
+                if(this.getItemViewType(position) == 0) {
+                    convertView = this.inflater.inflate(R.layout.day_item, null);
+                } else {
+                    convertView = this.inflater.inflate(R.layout.suplovani_item, null);
+                }
+
             }
 
 
-            TextView text = (TextView) convertView.findViewById(android.R.id.text1);
 
-            Log.d("SKOLAR-DB", position + " -> "+ this.getItemViewType(position) + " -> "+ (int)this.getItemId(position));
             if(this.getItemViewType(position) == 0) {
+                TextView text = (TextView) convertView.findViewById(R.id.day);
+
                 DateFormat format = android.text.format.DateFormat.getDateFormat(this.context);
                 Date date = (Date) this.getItem(position);
                 text.setText(format.format(date));
             } else {
+                TextView text = (TextView) convertView.findViewById(R.id.suplovani_data);
 
-                text.setText(Html.fromHtml(this.getItem(position)+"<br />"));
-
+                text.setText((SpannedString) getItem(position));
             }
 
 

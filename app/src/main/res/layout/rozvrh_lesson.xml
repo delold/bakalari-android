@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/rozvrh_lesson_name"
+            android:text="ZSV"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="Dav"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/rozvrh_lesson_teacher"
+            android:layout_weight="1"
+            android:layout_toEndOf="@+id/rozvrh_lesson_name"
+            android:layout_below="@+id/rozvrh_lesson_name"
+            android:layout_centerHorizontal="true"
+            android:textSize="10sp" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/linearLayout"
+            android:layout_below="@+id/rozvrh_lesson_teacher"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="8.A"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/rozvrh_lesson_room"
+                android:layout_below="@+id/linearLayout"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:textSize="10sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:text="SK1"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/rozvrh_lesson_group"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+
+    </RelativeLayout>

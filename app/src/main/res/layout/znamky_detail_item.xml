@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/znamky_child">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/znamky_child_layout"
+        android:orientation="horizontal">
+
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:gravity="right"
+            android:textColor="@color/text_light"
+            android:text="99.99.2099"
+
+            android:id="@+id/znamky_date"
+            android:layout_gravity="left|top" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textStyle="bold"
+            android:text="N"
+
+            android:layout_marginLeft="8dp"
+
+            android:id="@+id/znamky_mark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="Nějaký test na doplňování"
+            android:layout_marginLeft="8dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/znamky_name" />
+    </LinearLayout>
+
+</FrameLayout>

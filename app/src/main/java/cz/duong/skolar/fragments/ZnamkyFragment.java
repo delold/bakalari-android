@@ -2,7 +2,6 @@ package cz.duong.skolar.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +11,8 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import com.devspark.progressfragment.ProgressFragment;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,25 +20,34 @@ import org.json.JSONObject;
 import cz.duong.skolar.R;
 import cz.duong.skolar.server.Users;
 import cz.duong.skolar.utils.CoreUtils;
+import cz.duong.skolar.utils.SchoolUtils;
 import cz.duong.skolar.utils.UrlRequest;
 
 /**
  * Created by David on 9. 4. 2014.
  */
-public class ZnamkyFragment extends Fragment implements UrlRequest.RequestComplete {
+public class ZnamkyFragment extends ProgressFragment implements UrlRequest.RequestComplete {
 
+    private View contentView;
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        setContentView(contentView);
+        setEmptyText(R.string.data_empty);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View rootView = inflater.inflate(R.layout.fragment_znamky, container, false);
-
-        return rootView;
+        contentView = inflater.inflate(R.layout.fragment_znamky, container, false);
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     public void dataLoaded(JSONObject object) throws JSONException {
         if(this.isAdded()) {
+            setContentShown(true);
+
             object.getJSONObject("data").put("averages", this.calculateAddons(object));
 
             ExpandableListView lv = (ExpandableListView) this.getView().findViewById(R.id.znamky_list);
@@ -52,8 +62,6 @@ public class ZnamkyFragment extends Fragment implements UrlRequest.RequestComple
         try {
             JSONArray array = new JSONArray();
             JSONArray znamky = source.getJSONObject("data").getJSONArray("znamky");
-
-
 
             Integer sum;
             Integer cnt;
@@ -113,8 +121,10 @@ public class ZnamkyFragment extends Fragment implements UrlRequest.RequestComple
         Bundle request = new Bundle();
         request.putString("page", "znamky");
         //request.putString("file", "klasifikace-pokrocily.html");
-        request.putParcelable("user", new Users().getCurrentUser());
 
+        request.putParcelable("user", new Users(this.getActivity()).getCurrentUser());
+
+        setContentShown(false);
         new UrlRequest(this).execute(request);
     }
 
@@ -201,20 +211,46 @@ public class ZnamkyFragment extends Fragment implements UrlRequest.RequestComple
             return false;
         }
 
+
+
         @Override
         public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
             try {
                 if (convertView == null) {
-                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, null);
+                    convertView = inflater.inflate(R.layout.znamky_item, null);
                 }
 
-                TextView lesson = (TextView) convertView.findViewById(android.R.id.text1);
-                lesson.setText(predmety.getString(groupPosition));
+                int dp = CoreUtils.convertDPtoPX(this.context.getResources(), 14);
+                int dp_half = CoreUtils.convertDPtoPX(this.context.getResources(), 7);
 
-                TextView average = (TextView) convertView.findViewById(android.R.id.text2);
+
+
+
+                View padded = convertView.findViewById(R.id.znamky_group);
+                View padded_layout = convertView.findViewById(R.id.znamky_group_layout);
+
+                if(isExpanded) {
+                    padded.setPadding(dp, dp_half, dp, 0);
+                    padded_layout.setBackgroundResource(R.drawable.znamky_card_top);
+                } else {
+                    padded.setPadding(dp, dp_half, dp, dp_half);
+                    padded_layout.setBackgroundResource(R.drawable.card);
+                }
+
+
+
+                String name = predmety.getString(groupPosition);
+
+                TextView lesson = (TextView) convertView.findViewById(R.id.znamky_subject);
+                lesson.setText(name);
+
+                TextView average = (TextView) convertView.findViewById(R.id.znamky_average);
                 average.setText(String.format("%.2f", averages.getJSONObject(groupPosition).getDouble("average")));
-                average.setTextColor(
-                        this.context.getResources().getColor(averages.getJSONObject(groupPosition).getInt("color")));
+                average.setTextColor(this.context.getResources().getColor(averages.getJSONObject(groupPosition).getInt("color")));
+
+                TextView shortenSubject = (TextView) convertView.findViewById(R.id.znamky_shortedSubject);
+                shortenSubject.setText(SchoolUtils.shortenSubject(name));
+                shortenSubject.setBackgroundColor(SchoolUtils.subjectToColor(name));
 
                 return convertView;
 
@@ -228,15 +264,34 @@ public class ZnamkyFragment extends Fragment implements UrlRequest.RequestComple
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
             try {
                 if (convertView == null) {
-                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, null);
+                    convertView = inflater.inflate(R.layout.znamky_detail_item, null);
+                }
+
+                int dp = CoreUtils.convertDPtoPX(this.context.getResources(), 14);
+                int dp_half = CoreUtils.convertDPtoPX(this.context.getResources(), 7);
+
+                View child = convertView.findViewById(R.id.znamky_child);
+                View child_layout = convertView.findViewById(R.id.znamky_child_layout);
+
+                if(isLastChild) {
+                    child_layout.setBackgroundResource(R.drawable.znamky_card_bottom);
+                    child.setPadding(dp, 0, dp, dp_half);
+
+                } else {
+                    child_layout.setBackgroundResource(R.drawable.znamky_card_middle);
+                    child.setPadding(dp, 0, dp, 0);
                 }
 
                 JSONObject mark = (JSONObject) this.getChild(groupPosition, childPosition);
-                TextView mark_text = (TextView) convertView.findViewById(android.R.id.text1);
-                TextView caption_text = (TextView) convertView.findViewById(android.R.id.text2);
 
+                TextView date_text = (TextView) convertView.findViewById(R.id.znamky_date);
+                TextView mark_text = (TextView) convertView.findViewById(R.id.znamky_mark);
+                TextView caption_text = (TextView) convertView.findViewById(R.id.znamky_name);
+
+                date_text.setText(mark.getString("date"));
                 mark_text.setText(mark.getString("mark"));
                 caption_text.setText(mark.getString("caption"));
+
 
                 return convertView;
 
